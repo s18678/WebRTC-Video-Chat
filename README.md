@@ -1,171 +1,85 @@
-# WebRTC Video Chat
+# Backend-only Docker image (Node 22 + Python)
 
-A React Native application for video chat using WebRTC technology.
+This repository includes a backend-only Docker setup that packages:
 
-## Prerequisites
+- `server` (WebRTC signaling server)
+- `file-server` (upload + merge server)
+- `file-server/processing/merge_audio.py`
 
-- Node.js (v14 or higher)
-- React Native development environment set up
-- Android Studio (for Android development)
-- Xcode (for iOS development, macOS only)
-- Physical device or emulator with camera and microphone
+Mobile app directories are excluded from Docker build context.
 
-## Required Permissions
+## Build
 
-### Android
+From the repository root:
 
-The app requires the following permissions:
+```sh
+docker build -t webrtc-backend:node22 .
+```
 
-- Camera
-- Microphone
-- Internet
-- Network State
-- Bluetooth (for audio routing)
-- Local Network
+## Runtime `.env` files
 
-### iOS
+Place your env files at:
 
-The app requires the following permissions:
+- `server/.env`
+- `file-server/.env`
 
-- Camera
-- Microphone
-- Local Network
+Both folders are copied into the image, and both servers load env values.
 
-## Getting Started
+## Run
 
-1. **Clone the repository:**
+The image now defaults to a single process (`server/server.js`) per container.
 
-   ```sh
-   git clone [your-repo-url]
-   cd WebRTCPracticeNative
-   ```
+Run signaling server:
 
-2. **Install dependencies:**
+```sh
+docker run --rm -p 8888:8888 \
+  -e FILE_SERVER_ADDRESS=http://host.docker.internal:8885 \
+  webrtc-backend:node22
+```
 
-   ```sh
-   npm install
-   ```
+Run file server:
 
-3. **Set up environment variables:**
+```sh
+docker run --rm -p 8885:8885 \
+  --entrypoint node \
+  webrtc-backend:node22 file-server/server.js
+```
 
-   - Create a `.env` file in the root directory:
-     ```
-     SERVER_IP=your_local_ip
-     SERVER_PORT=8080
-     ```
-   - Create a `.env` file in the server directory:
-     ```
-     PORT=8080
-     ```
+Optional signaling runtime overrides:
 
-4. **Start the server:**
+- `PORT` (default `8888`)
+- `FILE_SERVER_ADDRESS` (required unless provided in `server/.env`)
 
-   ```sh
-   cd server
-   npm install
-   node server.js
-   ```
+Example:
 
-5. **Start the Metro bundler:**
+```sh
+docker run --rm -p 8888:8888 \
+	-e PORT=8888 \
+	-e FILE_SERVER_ADDRESS=http://host.docker.internal:8885 \
+	webrtc-backend:node22
+```
 
-   ```sh
-   npm start
-   ```
+## Run with Docker Compose
 
-6. **Run the app:**
-   - For Android:
-     ```sh
-     npm run android
-     ```
-   - For iOS:
-     ```sh
-     npm run ios
-     ```
+Compose runs the backend as two separate services:
 
-## Running on a Real Device
+- `signaling-server` on `8888`
+- `file-server` on `8885`
 
-### Prerequisites
+By default, signaling calls file-server via Docker DNS at `http://file-server:8885`.
 
-- Ensure your device and computer are on the same network
-- For Android, enable USB debugging in Developer Options
-- For iOS, ensure you have the correct permissions
+```sh
+docker compose up --build
+```
 
-### Steps to Run on a Real Device
+Run detached:
 
-1. **Start the Metro Bundler:**
+```sh
+docker compose up --build -d
+```
 
-   ```sh
-   npm start
-   ```
+Stop:
 
-2. **Run the app on your device:**
-
-   - **Android:**
-     ```sh
-     npm run android
-     ```
-   - **iOS:**
-     ```sh
-     npm run ios
-     ```
-
-3. **Open the Developer Menu on your device:**
-
-   - **Android:** Shake the device or run:
-     ```sh
-     adb shell input keyevent 82
-     ```
-   - **iOS:** Shake the device or press `Cmd + D` (if connected to a Mac)
-
-4. **Ensure the server is running:**
-
-   - Navigate to the server directory:
-     ```sh
-     cd server
-     ```
-   - Install dependencies if not already done:
-     ```sh
-     npm install
-     ```
-   - Start the server:
-     ```sh
-     node server.js
-     ```
-
-5. **Check the server IP address:**
-
-   - Ensure the IP address in `.env` matches your computer's local IP
-   - Update the IP if necessary and restart the Metro bundler and server
-
-6. **Troubleshooting:**
-   - If the app fails to connect to the server, ensure both the device and computer are on the same network
-   - Check for any firewall issues blocking port 8080
-   - Verify the server is running and accessible from the device's browser
-   - Ensure all required permissions are granted on the device
-
-## Features
-
-- Real-time video and audio communication
-- Camera and microphone access
-- Local network WebRTC connections
-- Cross-platform support (Android and iOS)
-
-## Dependencies
-
-- react-native-webrtc
-- socket.io-client
-- react-native-dotenv
-- express (server)
-- socket.io (server)
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+```sh
+docker compose down
+```

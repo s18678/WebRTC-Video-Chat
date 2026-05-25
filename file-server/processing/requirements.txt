@@ -1,0 +1,3 @@
+aiofiles
+pydub
+imageio-ffmpeg

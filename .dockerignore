@@ -1,0 +1,15 @@
+*
+
+!Dockerfile
+!docker/
+!server/
+!server/**
+!file-server/
+!file-server/**
+
+server/node_modules
+server/logs
+file-server/node_modules
+file-server/logs
+file-server/uploads
+file-server/processing/__pycache__

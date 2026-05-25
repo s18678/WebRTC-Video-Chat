@@ -1,0 +1,26 @@
+services:
+  file-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: webrtc-backend:node22
+    working_dir: /app/file-server
+    command: ["node", "server.js"]
+    ports:
+      - "8885:8885"
+    environment:
+      PORT: ${FILE_SERVER_PORT:-8885}
+    restart: unless-stopped
+
+  signaling-server:
+    image: webrtc-backend:node22
+    depends_on:
+      - file-server
+    working_dir: /app/server
+    command: ["node", "server.js"]
+    ports:
+      - "8888:8888"
+    environment:
+      PORT: ${SIGNALING_PORT:-8888}
+      FILE_SERVER_ADDRESS: ${FILE_SERVER_ADDRESS:-http://file-server:8885}
+    restart: unless-stopped
