@@ -414,12 +414,21 @@ const App = () => {
     requestPermissions();
     console.log('Attempting to connect to:', SERVER_ADDRESS);
 
+    if (!SERVER_ADDRESS) {
+      setError(
+        'Server address is missing. Check .env and restart Metro with cache reset.',
+      );
+      return;
+    }
+
     const signalingSocket = io(SERVER_ADDRESS, {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
+      timeout: 8000,
+      forceNew: true,
     });
 
     socketRef.current = signalingSocket;
@@ -435,7 +444,15 @@ const App = () => {
 
     signalingSocket.on('connect_error', err => {
       console.error('Socket connection error:', err);
-      setError(`Failed to connect to server: ${err.message || err}`);
+      const socketError = err as any;
+      const message =
+        socketError?.message ||
+        socketError?.description ||
+        socketError?.context?.message ||
+        String(socketError);
+      setError(
+        `Failed to connect to ${SERVER_ADDRESS}: ${message}`,
+      );
     });
 
     signalingSocket.on('error', err => {

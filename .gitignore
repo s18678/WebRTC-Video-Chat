@@ -76,3 +76,6 @@ yarn-error.log
 
 # Ignore .env file
 .env
+
+#file server files
+file-server/uploads

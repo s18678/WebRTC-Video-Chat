@@ -53,11 +53,11 @@ The app requires the following permissions:
    - Create a `.env` file in the root directory:
      ```
      SERVER_IP=your_local_ip
-     SERVER_PORT=8080
+     SERVER_PORT=8888
      ```
    - Create a `.env` file in the server directory:
      ```
-     PORT=8080
+     PORT=8888
      ```
 
 4. **Start the server:**
