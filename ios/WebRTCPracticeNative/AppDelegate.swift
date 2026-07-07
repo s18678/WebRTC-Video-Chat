@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "WebRTCPracticeNative",
+      withModuleName: "RecordingCommunicator_s18678Proj",
       in: window,
       launchOptions: launchOptions
     )

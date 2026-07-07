@@ -72,12 +72,14 @@ const App = () => {
   }, [isConnected]);
 
   const getSynchronizedServerTime = async (): Promise<number> => {
+    //Verify server connection
     const socket = socketRef.current;
     if (!socket?.connected) {
       throw new Error('Socket not connected');
     }
 
     return new Promise<number>((resolve, reject) => {
+      // Remember timestamp before sending request to server
       const start = Date.now();
       const timeout = setTimeout(() => {
         reject(new Error('Server time request timeout'));
@@ -86,9 +88,13 @@ const App = () => {
       try {
         socket.emit('get-server-time', null, (serverTime: number) => {
           clearTimeout(timeout);
+          // Timestamp after receiving server response
           const end = Date.now();
+          // Calculate round-trip time (RTT)
           const rtt = end - start;
+          // Calculate current server time adjusted for network latency
           const serverTimeAdjusted = serverTime + Math.floor(rtt / 2);
+          // Calculate divergence between app time and server time
           const appTimeDivergence = end - serverTimeAdjusted;
           resolve(appTimeDivergence);
         });
